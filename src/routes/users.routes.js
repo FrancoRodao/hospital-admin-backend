@@ -5,21 +5,30 @@ const colores = require("colors");
 
 const User = require("../models/user");
 const verifyToken = require('../middlewares/verifyToken')
+const pagination = require('../utils/pagination')
 
-
-router.get("/getUsers", verifyToken, (req, res) => {
+router.get("/getUsers", verifyToken, async (req, res) => {
     try {
-        User.find({}, "name email img role", (err, user) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: "false",
-                    message: "This user does not exist",
-                });
-            }
-            return res.status(200).json({
-                ok: "true",
-                users: user,
+
+        const {total,totalPages,page,limit,skip,error} = await pagination(req,await User.countDocuments())
+
+        const users = await User.find({}, "name email img role")
+        .limit(limit)
+        .skip(skip);
+
+        if(error){
+            return res.status(400).json({
+                ok: "false",
+                message: error.message
             });
+        }
+        return res.status(200).json({
+            ok: "true",
+            users,
+            total,
+            totalPages,
+            inPage: page,
+            limit
         });
     } catch (err) {
         console.log("AN ERROR OCCURRED IN OBTAINING USERSS".red, err);
@@ -29,6 +38,26 @@ router.get("/getUsers", verifyToken, (req, res) => {
         });
     }
 });
+
+router.get('/getUser/:id', verifyToken, async (req, res) => {
+    try {
+        const idUser = await req.params.id
+        const getUser = await Hospital.findById(idUser)
+
+        res.status(200).json({
+            ok: "true",
+            user: getUser
+        });
+
+    } catch (err) {
+        console.log("AN ERROR HAPPENED WHEN CREATING THE USER".red, err);
+        return res.status(500).json({
+            ok: "false",
+            message: "An unexpected error occurred while getting the user"
+        })
+    }
+
+})
 
 router.post("/createUser", verifyToken, async (req, res) => {
     try {
@@ -40,10 +69,7 @@ router.post("/createUser", verifyToken, async (req, res) => {
             img,
             role
         });
-
         const userSave = await usuario.save();
-
-        console.log("token".green, req.tokenPayLoad)
 
         res.status(201).json({
             ok: "true",

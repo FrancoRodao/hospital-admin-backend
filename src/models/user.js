@@ -1,6 +1,7 @@
 const moongose = require('mongoose')
 const Schema = moongose.Schema
 const uniqueValidator = require('mongoose-unique-validator')
+const paginate = require('mongoose-paginate-v2')
 
 const validRoles = {
     values: ['ADMIN_ROLE','USER_ROLE'],
@@ -35,6 +36,6 @@ const userSchema = new Schema({
 })
 
 userSchema.plugin(uniqueValidator,{message: 'This {PATH} is already registered, please use another'})
-
+userSchema.plugin(paginate)
 module.exports = moongose.model('User', userSchema)
 
