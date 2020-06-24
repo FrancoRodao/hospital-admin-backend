@@ -23,7 +23,8 @@ const userSchema = new Schema({
         required: [true, "password is required"]
     },
     img: {
-        type: String    
+        type: String,
+        default: 'uploads/images/default.svg'   
     },
     role: {
         type: String,
