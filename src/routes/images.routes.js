@@ -163,62 +163,58 @@ router.get('/getImage/:type/:id',  async (req,res)=>{
 
 router.delete('/deleteImage/:type/:id',  async (req,res)=>{
     try{
-        const {type,id} = req.params
-        const validTypes = ['doctor','hospital','user']
+        const { type, id } = req.params
+        const validTypes = ['doctor', 'hospital', 'user']
         const defaultImagePath = 'uploads/images/default.svg'
 
-        if(validTypes.indexOf(type) != -1){
-            switch (type) {
-                case 'doctor':
-                    const doctor = await Doctor.findById(id)
-                    if(doctor == null){
-                        return res.status(401).json({
-                            ok: "false",
-                            message: "this doctor doesn't exists"
-                        });
-                    }
-                    const imagePathDoctor = defaultImagePath
-                    return res.status(200).json({
-                        ok: "true",
-                        message: 'uploads/images/doctor'+imagePathDoctor
+        switch (type) {
+            case 'doctor':
+                const doctor = await Doctor.findById(id)
+                if (doctor == null) {
+                    return res.status(401).json({
+                        ok: "false",
+                        message: "this doctor doesn't exists"
                     });
+                }
+                doctor.img = defaultImagePath
+                doctor.save()
+                return res.status(200).json({
+                    ok: "true",
+                    message: defaultImagePath
+                });
 
-                case 'user':
-                    const user = await User.findById(id)
-                    if(user == null){
-                        return res.status(401).json({
-                            ok: "false",
-                            message: "this user doesn't exists"
-                        });
-                    }
-                    const imagePathUser = defaultImagePath
-                    return res.status(200).json({
-                        ok: "true",
-                        message: 'uploads/images/user'+imagePathUser
+            case 'user':
+                const user = await User.findById(id)
+                if (user == null) {
+                    return res.status(401).json({
+                        ok: "false",
+                        message: "this user doesn't exists"
                     });
+                }
+                user.img = defaultImagePath
+                user.save()
+                return res.status(200).json({
+                    ok: "true",
+                    message: defaultImagePath
+                });
 
-                case 'hospital':
-                    const hospital = await Hospital.findById(id)
-                    if(hospital == null){
-                        return res.status(401).json({
-                            ok: "false",
-                            message: "this hospital doesn't exists"
-                        });
-                    }
-                    const imagePathHospital = defaultImagePath
-                    return res.status(200).json({
-                        ok: "true",
-                        message: 'uploads/images/hospital'+imagePathHospital
+            case 'hospital':
+                const hospital = await Hospital.findById(id)
+                if (hospital == null) {
+                    return res.status(401).json({
+                        ok: "false",
+                        message: "this hospital doesn't exists"
                     });
+                }
+                hospital.img = defaultImagePath
+                hospital.save()
+                return res.status(200).json({
+                    ok: "true",
+                    message: defaultImagePath
+                });
 
-                default:
-                    throw new Error('error in switch');
-            }
-        }else{
-            return res.status(401).json({
-                ok: "false",
-                message: 'invalid type (valid types: '+validTypes+')'
-            });
+            default:
+                throw new Error('error in switch');
         }
 
     }catch(err){
