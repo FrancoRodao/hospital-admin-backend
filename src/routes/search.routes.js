@@ -9,7 +9,7 @@ const User = require('../models/user')
 
 
 //AGREGAR EL VERIFICADOR DE TOKEN
-router.get('/collection/all/:search', async (req,res)=>{
+router.get('/collection/all/:search', verifyToken, async (req,res)=>{
     try{
         let limit = Number(req.query.limit) || 5
         let page = Number(req.query.page) || 1
@@ -55,7 +55,7 @@ router.get('/collection/all/:search', async (req,res)=>{
 
 })
 
-router.get('/collection/hospitals/:search', async (req,res)=>{
+router.get('/collection/hospitals/:search', verifyToken, async (req,res)=>{
     try{
     
         const search = req.params.search
@@ -90,7 +90,7 @@ router.get('/collection/hospitals/:search', async (req,res)=>{
     }
 })
 
-router.get('/collection/users/:search', async (req,res)=>{
+router.get('/collection/users/:search', verifyToken, async (req,res)=>{
     try{
     
         const search = req.params.search
@@ -126,7 +126,7 @@ router.get('/collection/users/:search', async (req,res)=>{
     }
 })
 
-router.get('/collection/doctors/:search', async (req,res)=>{
+router.get('/collection/doctors/:search', verifyToken, async (req,res)=>{
     try{
     
         const search = req.params.search

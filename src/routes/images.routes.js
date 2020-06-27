@@ -8,7 +8,7 @@ const Doctor = require('../models/doctor')
 const User = require('../models/user');
 
 
-router.post('/uploadImage',  multer.single('image'), async (req,res)=>{
+router.post('/uploadImage', verifyToken, multer.single('image'), async (req,res)=>{
     try{
 
         if(req.fileValidationErrorId){
@@ -93,7 +93,7 @@ router.post('/uploadImage',  multer.single('image'), async (req,res)=>{
     }
 })
 
-router.get('/getImage/:type/:id',  async (req,res)=>{
+router.get('/getImage/:type/:id', verifyToken, async (req,res)=>{
     try{
         const {type,id} = req.params
         const validTypes = ['doctor','hospital','user']
@@ -161,7 +161,7 @@ router.get('/getImage/:type/:id',  async (req,res)=>{
     }
 })
 
-router.delete('/deleteImage/:type/:id',  async (req,res)=>{
+router.delete('/deleteImage/:type/:id', verifyToken, async (req,res)=>{
     try{
         const { type, id } = req.params
         const validTypes = ['doctor', 'hospital', 'user']

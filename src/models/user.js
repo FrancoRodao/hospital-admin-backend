@@ -31,6 +31,10 @@ const userSchema = new Schema({
         required: [true, "role is required"],
         default: 'USER_ROLE',
         enum: validRoles
+    },
+    google: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true

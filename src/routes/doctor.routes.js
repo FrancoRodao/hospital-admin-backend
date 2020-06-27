@@ -51,7 +51,7 @@ router.post('/addDoctor', verifyToken, async (req, res) => {
 
 })
 
-router.get('/getDoctors', async (req, res) => {
+router.get('/getDoctors', verifyToken, async (req, res) => {
     try {
 
         const limit = Number(await req.query.limit || 5)
@@ -98,7 +98,7 @@ router.get('/getDoctors', async (req, res) => {
 
 })
 
-router.get('/getDoctor/:id', async (req, res) => {
+router.get('/getDoctor/:id', verifyToken, async (req, res) => {
     try {
         const idDoctor = await req.params.id
         const getDoctor = await Doctor.findById(idDoctor)
@@ -190,7 +190,7 @@ router.put('/editDoctor/:id', verifyToken, async (req, res) => {
 
 })
 
-router.delete("/deleteDoctor/:id", async (req, res) => {
+router.delete("/deleteDoctor/:id", verifyToken,  async (req, res) => {
     try {
         const id = await req.params.id;
 

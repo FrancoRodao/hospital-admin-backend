@@ -106,7 +106,7 @@ router.post('/addHospital', verifyToken, async (req, res) => {
 
 })
 
-router.put('/editHospital/:id',  async (req, res) => {
+router.put('/editHospital/:id', verifyToken, async (req, res) => {
     try {
         const { name, img } = req.body
         const id = await req.params.id
