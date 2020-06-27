@@ -4,7 +4,7 @@
 
 This is the backend of Hospital Admin
 
-To execute is neccesary rebuild the modules of node with next command:
+To execute is necessary rebuild the modules of node with next command:
 
 ```
 npm install
