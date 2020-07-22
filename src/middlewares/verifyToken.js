@@ -1,9 +1,7 @@
 const jwt = require('jsonwebtoken')
-const colores = require('colors')
 
 function verifyToken(req,res,next){
-    const token = req.query.token
-
+    const token = req.header('x-token')
     jwt.verify(token, process.env.SECRET_KEY,(err,decoded)=>{
         if(err){
             return res.status(401).json({

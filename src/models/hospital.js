@@ -6,7 +6,7 @@ const paginate = require('mongoose-paginate-v2')
 
 const hospitalSchema = new Schema({
     name: {type: String, unique: true, required: [true, 'name is required']},
-    img: {type: String},
+    img: {type: String, default: 'uploads/images/default.svg'},
     lastUserModifedIt: {type: Schema.Types.ObjectId, ref: 'User', required: true},
 },{
     timestamps: true

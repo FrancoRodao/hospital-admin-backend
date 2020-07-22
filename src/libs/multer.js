@@ -1,5 +1,6 @@
 const multer = require('multer')
 const { v4: uuidv4 } = require('uuid');
+const user = require('../models/user')
 const path = require('path')
 
 
@@ -31,6 +32,13 @@ const storage = multer.diskStorage({
 })
 
 const filterImage = (req, file, cb) => {
+    console.log(req.body.type)
+    console.log(req.body.id)
+    if(req.body.type || file.mimetype || req.body.id == null || undefined){
+        req.fileValidationError = 'invalid'
+        return cb(null, false, new Error(req.fileValidationError));
+    }
+
     const validExtensions = ['image/jpg','image/png','image/svg','image/gif','image/jpeg']
     const fileExtension = file.mimetype
     if (validExtensions.indexOf(fileExtension) == -1) {
@@ -40,6 +48,7 @@ const filterImage = (req, file, cb) => {
 
     const validTypes = ['doctor','hospital','user']
     const type = req.body.type
+
     if (validTypes.indexOf(type) == -1) {
         req.fileValidationErrorType = 'invalid type (valid types: '+validTypes+')'
         return cb(null, false, new Error(req.fileValidationErrorType));
