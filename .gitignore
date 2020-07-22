@@ -2,4 +2,14 @@
 node_modules/
 google-signin-demo/node_modules
 
-uploads/
+uploads/images/hospital/**.jpg
+uploads/images/hospital/**.png
+uploads/images/hospital/**.gif
+
+uploads/images/user/**.jpg
+uploads/images/user/**.png
+uploads/images/user/**.gif
+
+uploads/images/doctor/**.jpg
+uploads/images/doctor/**.png
+uploads/images/doctor/**.gif
