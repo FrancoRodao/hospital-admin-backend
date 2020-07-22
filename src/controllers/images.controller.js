@@ -32,7 +32,7 @@ const uploadImage = async (req = request,res)=>{
             });
         }
 
-        console.log(req.files)
+        
 
         if(!req.file){
             return res.status(401).json({
