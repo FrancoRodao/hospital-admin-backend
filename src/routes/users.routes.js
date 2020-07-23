@@ -7,8 +7,7 @@ const { validateFields } = require('../middlewares/validateFields')
 Router.post('/users', 
     [
         check(['name','email','password'], 'required field').not().isEmpty(), 
-        validateFields,
-        verifyToken
+        validateFields
     ], 
     createUser)
 

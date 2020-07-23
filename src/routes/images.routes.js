@@ -1,18 +1,16 @@
-const multer = require('../libs/multer');
 const Router = require("express").Router();
 const verifyToken = require('../middlewares/verifyToken')
 const { uploadImage, getImage, deleteImage } = require('../controllers/images.controller');
 
-Router.post('/image', 
+Router.post('/image/:id/:type', 
     [
-    multer.single('image'),
     verifyToken
     ], 
     uploadImage)
 
-Router.get('/image/:type/:id', [verifyToken], getImage)
+Router.get('/image/:id/:type', [verifyToken], getImage)
 
-Router.delete('/image/:type/:id', [verifyToken] ,deleteImage)
+Router.delete('/image/:id/:type', [verifyToken] ,deleteImage)
 
 
 module.exports = Router

@@ -40,7 +40,7 @@ const userSchema = new Schema({
     timestamps: true
 })
 
-userSchema.plugin(uniqueValidator,{message: 'This {PATH} is already registered, please use another'})
+// userSchema.plugin(uniqueValidator,{message: 'This {PATH} is already registered, please use another'})
 userSchema.plugin(paginate)
 module.exports = moongose.model('User', userSchema)
 

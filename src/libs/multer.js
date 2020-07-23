@@ -1,13 +1,20 @@
 const multer = require('multer')
 const { v4: uuidv4 } = require('uuid');
-const user = require('../models/user')
 const path = require('path')
+const mongooseValidId = require('mongoose').isValidObjectId
 
+class customMulterError extends Error {
+    constructor(message) {
+        super();
+        this.name = 'Custom multer error'
+        this.message = message
+    }
+}
 
 const storage = multer.diskStorage({
     destination: (req,file,cb)=>{
         const validTypes = ['doctor','hospital','user']
-        const type = req.body.type
+        const type = req.params.type
         if(validTypes.indexOf(type) != -1){
             switch (type) {
                 case 'doctor':
@@ -22,6 +29,8 @@ const storage = multer.diskStorage({
                 default:
                     throw new Error('error in switch');
             }
+        }else{
+            return cb(new customMulterError('invalid type (valid types: '+validTypes+')'));
         }
 
     },
@@ -32,41 +41,36 @@ const storage = multer.diskStorage({
 })
 
 const filterImage = (req, file, cb) => {
-    console.log(req.body.type)
-    console.log(req.body.id)
-    if(req.body.type || file.mimetype || req.body.id == null || undefined){
-        req.fileValidationError = 'invalid'
-        return cb(null, false, new Error(req.fileValidationError));
+    const id = req.params.id
+    if(!id || (mongooseValidId(id) == false)){
+        return cb(new customMulterError('Invalid id'));
+    }
+    
+    if(!file){
+        return cb(new customMulterError('Not found image in your pc, please try later'));
     }
 
     const validExtensions = ['image/jpg','image/png','image/svg','image/gif','image/jpeg']
     const fileExtension = file.mimetype
     if (validExtensions.indexOf(fileExtension) == -1) {
-        req.fileValidationErrorExtension = 'invalid extension (valid extensions: '+validExtensions+')'
-        return cb(null, false, new Error(req.fileValidationErrorExtension));
+        return cb(new customMulterError('Invalid image extension (valid extensions: '+validExtensions+')'));
     }
 
     const validTypes = ['doctor','hospital','user']
-    const type = req.body.type
-
+    const type = req.params.type
     if (validTypes.indexOf(type) == -1) {
-        req.fileValidationErrorType = 'invalid type (valid types: '+validTypes+')'
-        return cb(null, false, new Error(req.fileValidationErrorType));
-    }
-
-    const id = req.body.id
-    if (!id) {
-        req.fileValidationErrorType = "this "+type+" doesn't exists"
-        return cb(null, false, new Error(req.fileValidationErrorType));
+        return cb(new customMulterError('Invalid type (valid types: '+validTypes+')'));
     }
 
     cb(null,true)
 }
 
-module.exports = multer({
+const multerConfig = multer({
     storage: storage,
     limits: {
         fieldSize: 2000000
     },
     fileFilter: filterImage
-})
+}).single('image')
+
+module.exports = {multerConfig,customMulterError}

@@ -39,6 +39,14 @@ const createUser = async (req, res) => {
     try {
         const { name, email, password, img, role } = await req.body;
 
+        const emailExists = await User.findOne({email})
+        if(emailExists){
+            return res.status(400).json({
+                ok: "false",
+                message: 'This email is already registered, please use another',
+            });
+        }
+
         const usuario = await new User({
             name,
             email,
@@ -55,12 +63,8 @@ const createUser = async (req, res) => {
         });
     } catch (err) {
         console.log("AN ERROR HAPPENED WHEN CREATING THE USER".red, err);
-        if (err.errors.email) {
-            return res.status(400).json({
-                ok: "false",
-                message: err.errors.email.properties.message,
-            });
-        } else if (err.errors.role) {
+
+        if (err.errors.role) {
             return res.status(400).json({
                 ok: "false",
                 message: err.errors.role.properties.message,
@@ -76,7 +80,6 @@ const createUser = async (req, res) => {
 
 const editUser = async (req, res) => {
     try {
-        console.log(ObjectId(req.body.id))
         if(!ObjectId(req.body.id)){
             return res.status(400).json({
                 ok: "false",
@@ -115,7 +118,16 @@ const editUser = async (req, res) => {
 
         const { email, password, confirmPassword } = await req.body;
 
+        const emailExists = await User.findOne({email})
+        if(emailExists){
+            if(id != emailExists._id){
+                return res.status(400).json({
+                    ok: "false",
+                    message: 'This email is already registered, please use another',
+                });
+            }
 
+        }
 
         if (password == confirmPassword) {
             userFinded.name = name
