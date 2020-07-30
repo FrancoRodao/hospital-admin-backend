@@ -62,13 +62,13 @@ const searchInCollections = async (req,res)=>{
 
     let data = [];
 
-    let regexname = new RegExp(search, 'i')
+    let regexname = new RegExp(term, 'i')
     let regexemail = new RegExp(term, 'i')
 
     switch ( collection ) {
         case 'doctors':
-            const paginateDoctor = await Doctor.paginate({
-                                     name: regexname},{
+            const paginateDoctor = await Doctor.paginate({$or: [{
+                                     name:regexname}, {hospital: regexname}]},{
                                      limit: limit,
                                      page: page, 
                                      populate: ({ 
@@ -82,7 +82,6 @@ const searchInCollections = async (req,res)=>{
                 })
             }
             data = {
-                    ok: "true",
                     doctors: paginateDoctor.docs,
                     total: paginateDoctor.totalDocs,
                     totalPages: paginateDoctor.totalPages,
@@ -107,7 +106,6 @@ const searchInCollections = async (req,res)=>{
             }
 
             data = {
-                    ok: "true",
                     hospitals: paginateHospitals.docs,
                     total: paginateHospitals.totalDocs,
                     totalPages: paginateHospitals.totalPages,
@@ -131,7 +129,7 @@ const searchInCollections = async (req,res)=>{
             }
 
             data = {
-                    hospitals: paginateUsers.docs,
+                    users: paginateUsers.docs,
                     total: paginateUsers.totalDocs,
                     totalPages: paginateUsers.totalPages,
                     inPage: paginateUsers.page,

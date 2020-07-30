@@ -46,6 +46,7 @@ const uploadImage = async (req = request, res) => {
 
 
             const id = req.params.id
+            console.log(id)
             const type = req.params.type
             const defaultImagePath = 'uploads/images/default.svg'
 
@@ -61,9 +62,11 @@ const uploadImage = async (req = request, res) => {
                     }
 
                     //DELETE OLD IMAGE
-                    const deleteImageDoctor = await deleteFile(user.img).catch(err => {
-                        console.log('error when deleting old image')
-                    })
+                    if(doctor.img != defaultImagePath){
+                        const deleteImageDoctor = await deleteFile(doctor.img).catch(err => {
+                            console.log('error when deleting old image')
+                        })
+                    }
                     //SAVE NEW IMAGE PATH
                     doctor.img = "uploads/images/doctor/" + req.file.filename
                     doctor.save()
@@ -104,10 +107,11 @@ const uploadImage = async (req = request, res) => {
                             message: "this hospital doesn't exists"
                         });
                     }
-
-                    const deleteImageHospital = await deleteFile(user.img).catch(err => {
-                        console.log('error when deleting old image')
-                    })
+                    if(hospital.img != defaultImagePath){
+                        const deleteImageHospital = await deleteFile(hospital.img).catch(err => {
+                            console.log('error when deleting old image')
+                        })
+                    }
                     
                     hospital.img = "uploads/images/hospital/" + req.file.filename
                     hospital.save()

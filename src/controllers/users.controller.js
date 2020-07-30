@@ -188,14 +188,11 @@ const deleteUser = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const search = req.params.search
-        const regexname = new RegExp(search, 'i')
-        const regexemail = new RegExp(search, 'i')
 
         let limit = Number(req.query.limit) || 5
         let page = Number(req.query.page) || 1
 
-        const paginate = await User.paginate({ $or: [{ name: regexname }, { email: regexemail }] }, { limit: limit, page: page, select: '_id name email role google img' })
+        const paginate = await User.paginate({ } , { limit: limit, page: page, select: '_id name email role google img' })
 
         if (paginate.page > paginate.totalPages) {
             return res.status(400).json({
@@ -247,5 +244,4 @@ module.exports = {
     editUser,
     deleteUser,
     getUsers
-    // getUser,
 };

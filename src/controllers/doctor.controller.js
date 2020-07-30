@@ -3,12 +3,12 @@ const Doctor = require('../models/doctor')
 const createDoctor = async (req, res) => {
     try {
         const { name, img, hospital } = req.body
-        const lastUserModifedIt = req.tokenPayLoad.user._id
+        const lastUserModifedIt = req.tokenPayLoad.payload.id
 
         const createdDoctor = new Doctor({
             name,
             img,
-            hospital,
+            hospital: hospital.name,
             lastUserModifedIt
         })
 
@@ -51,38 +51,26 @@ const createDoctor = async (req, res) => {
 const getDoctors = async (req, res) => {
     try {
 
-        const limit = Number(await req.query.limit || 5)
-        const page = Number(await req.query.page || 0)
-        const total = await Doctor.countDocuments()
-        let totalPages = await Math.round(total/limit)-1
-        if(totalPages <= 0){
-            totalPages = 0
-        }
 
-        if(page < 0 || !Number.isInteger(page) || !Number.isInteger(limit) || limit < 0){
+        let limit = Number(req.query.limit) || 5
+        let page = Number(req.query.page) || 1
+        
+        const paginate = await Doctor.paginate({  },{limit: limit,page: page})
+        
+        if(paginate.page > paginate.totalPages){
             return res.status(400).json({
-                ok: "false",
-                message: "page and limit must be an integer",
-            });
+                ok: 'false',
+                message: `There are only ${paginate.totalPages} pages`
+            })
         }
-        if(page > totalPages){
-            return res.status(400).json({
-                ok: "false",
-                message: `There are only ${totalPages} pages`,
-            });
-        }
-
-        const getDoctors = await Doctor.find({})
-        .populate("lastUserModifedIt", 'name')
-        .limit(limit)
-        .skip(page*limit);
-
-        res.status(200).json({
+        
+        return res.status(200).json({
             ok: "true",
-            doctors: getDoctors,
-            total,
-            totalPages,
-            inPage: page
+            doctors: paginate.docs,
+            total: paginate.totalDocs,
+            totalPages: paginate.totalPages,
+            inPage: paginate.page,
+            limit: paginate.limit
         });
 
     } catch (err) {
@@ -98,15 +86,10 @@ const getDoctors = async (req, res) => {
 const editDoctor = async (req, res) => {
     try {
         const { name, img, hospital } = await req.body
-        const id = await req.params.id
-        const lastUserModifedIt = await req.tokenPayLoad.user._id
+        const id = req.params.id
+        const lastUserModifedIt = await req.tokenPayLoad.payload.id
 
-        const modifiedDoctor = await Doctor.findByIdAndUpdate({_id: id},{
-            name,
-            img,
-            hospital,
-            lastUserModifedIt
-        })
+        const modifiedDoctor = await Doctor.findById(id)
 
         if(!modifiedDoctor){
             return res.status(400).json({
@@ -115,6 +98,10 @@ const editDoctor = async (req, res) => {
             });
         }
 
+        modifiedDoctor.name = name
+        modifiedDoctor.img = img
+        modifiedDoctor.hospital = hospital
+        modifiedDoctor.lastUserModifedIt = lastUserModifedIt
         const savedDoctor = await modifiedDoctor.save()
 
         return res.status(200).json({

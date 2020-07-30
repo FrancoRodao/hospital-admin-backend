@@ -3,8 +3,8 @@ const Hospital = require('../models/hospital')
 const createHospital = async (req, res) => {
     try {
         const { name, img } = req.body
-        const lastUserModifedIt = req.tokenPayLoad.user._id
-        
+        const lastUserModifedIt = req.tokenPayLoad.payload.id
+
         const createdHospital = await new Hospital({
             name,
             img,
@@ -35,11 +35,24 @@ const createHospital = async (req, res) => {
 
 const editHospital = async (req, res) => {
     try {
-        const { name, img } = req.body
-        const id = await req.params.id
-        // const lastUserModifedIt = req.tokenPayLoad.user._id
+
+        const { name, img, _id } = req.body
+        const lastUserModifedIt = req.tokenPayLoad.payload.id
+
+        //check if exist a hospital with same name
+        const checkName = await Hospital.findOne({name})
+
+
+        if(checkName){
+            if(checkName._id != _id){
+                return res.status(400).json({
+                    ok: "false",
+                    message: 'The name is already register, please use another'
+                });
+            }
+        }
         
-        const modifiedHospital = await Hospital.findById({_id: id})
+        const modifiedHospital = await Hospital.findById({_id})
         if(modifiedHospital == null){
             return res.status(400).json({
                 ok: "false",
@@ -49,6 +62,7 @@ const editHospital = async (req, res) => {
 
         modifiedHospital.name = name
         modifiedHospital.img = img
+        modifiedHospital.lastUserModifedIt = lastUserModifedIt
         const savedHosptial = await modifiedHospital.save()
         
         return res.status(200).json({
@@ -82,22 +96,20 @@ const deleteHospital = async (req, res) => {
     try {
         const id = await req.params.id;
         
-        Hospital.findByIdAndRemove(id, (err, removedHospital) => {
-            if (err) {
-                throw err
-            } else {
-                if (removedHospital) {
-                    return res.status(200).json({
-                        ok: "true",
-                        message: removedHospital,
-                    });
-                }
-                return res.status(400).json({
-                    ok: "false",
-                    message: "This hospital does not exist",
-                });
-            }
+        const removedHospital = await Hospital.findByIdAndDelete(id)
+
+        if(removedHospital == null){
+            return res.status(400).json({
+                ok: "false",
+                message: "This hospital does not exist",
+            });
+        }
+
+        return res.status(200).json({
+            ok: "true",
+            message: removedHospital,
         });
+
     } catch (err) {
         console.log("AN UNEXPECTED ERROR HAPPENED WHEN DELETING THE HOSPITAL".red, err);
         return res.status(500).json({
@@ -110,14 +122,11 @@ const deleteHospital = async (req, res) => {
 
 const getHospitals = async (req, res) => {
     try {
-        const search = req.params.search
-        const regexname = new RegExp(search, 'i')
-        const regexemail = new RegExp(search, 'i')
 
         let limit = Number(req.query.limit) || 5
         let page = Number(req.query.page) || 1
         
-        const paginate = await Hospital.paginate({$or: [{name:regexname}, {email: regexemail}]},{limit: limit,page: page,select: '_id name email role google img'})
+        const paginate = await Hospital.paginate({  },{limit: limit,page: page})
         
         if(paginate.page > paginate.totalPages){
             return res.status(400).json({

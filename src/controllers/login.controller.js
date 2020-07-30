@@ -106,7 +106,12 @@ const renewToken = async(req, res = response) => {
         const id = req.tokenPayLoad.payload.id;
 
         // Generar el TOKEN - JWT
-        const token = await generateToken(id);
+        const token = await generateToken(id).catch(err=>{
+            return res.status(500).json({
+                ok: false,
+                message: 'error generating token'
+            });
+        });
     
         // Obtener el usuario por UID
         const user = await User.findById( id );

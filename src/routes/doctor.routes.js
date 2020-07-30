@@ -6,15 +6,15 @@ const { check } = require('express-validator')
 
 Router.post('/doctors', 
     [
-    check(['name','email','role'], 'required field').not().isEmpty(),
+    check(['name','hospital'], 'required field').not().isEmpty(),
     validateFields,
     verifyToken
     ], 
     createDoctor)
 
-Router.put('/doctors', 
+Router.put('/doctors/:id', 
     [
-        check(['name','email','role'], 'required field').not().isEmpty(),
+        check(['name','hospital'], 'required field').not().isEmpty(),
         validateFields,
         verifyToken
     ], 
@@ -22,7 +22,7 @@ Router.put('/doctors',
 
 Router.get('/doctors', [verifyToken], getDoctors)
 
-Router.delete('/doctors', [verifyToken] ,deleteDoctor)
+Router.delete('/doctors/:id', [verifyToken] ,deleteDoctor)
 
 
 module.exports = Router

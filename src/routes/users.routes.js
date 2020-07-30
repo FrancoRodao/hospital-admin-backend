@@ -21,7 +21,7 @@ Router.put('/users',
 
 Router.get('/users', [verifyToken], getUsers)
 
-Router.delete('/users', [verifyToken] ,deleteUser)
+Router.delete('/users/:id', [verifyToken] ,deleteUser)
 
 
 

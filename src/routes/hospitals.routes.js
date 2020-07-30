@@ -22,7 +22,7 @@ Router.put('/hospitals',
 
 Router.get('/hospitals', [verifyToken], getHospitals)
 
-Router.delete('/hospitals', [verifyToken] ,deleteHospital)
+Router.delete('/hospitals/:id', [verifyToken] ,deleteHospital)
 
 
 module.exports = Router
