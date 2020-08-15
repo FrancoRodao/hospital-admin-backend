@@ -38,6 +38,6 @@ app.use('/api', require('./routes/images.routes'))
 
 //ESCUCHAR PETICIONES
 
-app.listen(port || 3000, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log("express server puerto:".green, port, "online".green)
 })

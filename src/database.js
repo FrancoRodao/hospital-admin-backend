@@ -1,6 +1,6 @@
 const moongose = require('mongoose')
 
-moongose.connection.openUri(process.env.URI, {
+moongose.connection.openUri('mongodb+srv://Franco:Francocjs12@cluster0.6z7yz.mongodb.net/test', {
     useUnifiedTopology: true, 
     useNewUrlParser: true,
     useCreateIndex: true,
