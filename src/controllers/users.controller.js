@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
+const user = require("../models/user");
 var ObjectId = require('mongoose').Types.ObjectId;
 
 
@@ -39,8 +40,8 @@ const createUser = async (req, res) => {
     try {
         const { name, email, password, img, role } = await req.body;
 
-        const emailExists = await User.findOne({email})
-        if(emailExists){
+        const emailExists = await User.findOne({ email })
+        if (emailExists) {
             return res.status(400).json({
                 ok: "false",
                 message: 'This email is already registered, please use another',
@@ -78,19 +79,19 @@ const createUser = async (req, res) => {
     }
 }
 
-const editUser = async (req, res) => {
+const selfEditUser = async (req, res) => {
     try {
-        if(!ObjectId(req.body.id)){
+        if (!ObjectId(req.body._id)) {
             return res.status(400).json({
                 ok: "false",
                 message: 'invalid id',
             });
         }
 
-        const id = await req.body.id;
-
-
+        const id = await req.body._id;
+        const role = req.body.role
         const name = await req.body.name
+
         const userFinded = await User.findById(id)
 
         if (!userFinded) {
@@ -102,6 +103,7 @@ const editUser = async (req, res) => {
         }
         if (userFinded.google == true) {
             userFinded.name = name
+            userFinded.role = role
             const userSaved = await userFinded.save()
             return res.status(200).json({
                 ok: "true",
@@ -109,7 +111,7 @@ const editUser = async (req, res) => {
             });
         }
 
-        if(req.body.email == undefined || null){
+        if (req.body.email == undefined || null) {
             return res.status(400).json({
                 ok: false,
                 message: 'email is required'
@@ -118,9 +120,9 @@ const editUser = async (req, res) => {
 
         const { email, password, confirmPassword } = await req.body;
 
-        const emailExists = await User.findOne({email})
-        if(emailExists){
-            if(id != emailExists._id){
+        const emailExists = await User.findOne({ email })
+        if (emailExists) {
+            if (id != emailExists._id) {
                 return res.status(400).json({
                     ok: "false",
                     message: 'This email is already registered, please use another',
@@ -132,7 +134,10 @@ const editUser = async (req, res) => {
         if (password == confirmPassword) {
             userFinded.name = name
             userFinded.email = email
-            userFinded.password = await bcrypt.hash(password, 10)
+            userFinded.role = role
+            if (password) {
+                userFinded.password = await bcrypt.hash(password, 10)
+            }
             const userSaved = await userFinded.save()
 
             userFinded.password = undefined
@@ -148,6 +153,7 @@ const editUser = async (req, res) => {
             });
         }
 
+
     } catch (err) {
         console.log("AN UNEXPECTED ERROR HAPPENED WHEN EDITING THE USER".red, err);
         return res.status(500).json({
@@ -156,6 +162,75 @@ const editUser = async (req, res) => {
         });
     }
 };
+
+const editAnyUser = async (req, res) => {
+    try{
+        const id = req.params.id
+
+        const userFinded = await User.findById(id)
+
+        if(!userFinded){
+            return res.status(404).json({
+                ok: "false",
+                message: "This user doesn't exist"
+            });
+        }
+
+        if (userFinded.google == true) {
+            userFinded.name = name
+            userFinded.role = role
+            const userSaved = await userFinded.save()
+            return res.status(200).json({
+                ok: "true",
+                user: userSaved
+            })
+        }
+
+        if (req.body.email == undefined || null) {
+            return res.status(400).json({
+                ok: false,
+                message: 'email is required'
+            })
+        }
+
+        const { email, password, name, role  } = await req.body;
+
+        const emailExists = await User.findOne({ email })
+        if (emailExists) {
+            if (id != emailExists._id) {
+                return res.status(400).json({
+                    ok: "false",
+                    message: 'This email is already registered, please use another',
+                });
+            }
+
+        }
+
+        userFinded.name = name
+        userFinded.email = email
+        userFinded.role = role
+        if (password) {
+            userFinded.password = await bcrypt.hash(password, 10)
+        }
+        const userSaved = await userFinded.save()
+
+        userFinded.password = undefined
+        return res.status(200).json({
+            ok: "true",
+            user: userSaved
+        });
+
+
+
+
+    }catch(error){
+        console.log("AN UNEXPECTED ERROR HAPPENED WHEN EDITING THE USER".red, error);
+        return res.status(500).json({
+            ok: "false",
+            message: 'UNEXPECTED ERROR',
+        });
+    }
+}
 
 const deleteUser = async (req, res) => {
     try {
@@ -192,7 +267,7 @@ const getUsers = async (req, res) => {
         let limit = Number(req.query.limit) || 5
         let page = Number(req.query.page) || 1
 
-        const paginate = await User.paginate({ } , { limit: limit, page: page, select: '_id name email role google img' })
+        const paginate = await User.paginate({}, { limit: limit, page: page, select: '_id name email role google img' })
 
         if (paginate.page > paginate.totalPages) {
             return res.status(400).json({
@@ -219,29 +294,12 @@ const getUsers = async (req, res) => {
     }
 }
 
-// const getUser = async (req, res) => {
-//     try {
-//         const idUser = await req.params.id
-//         const getUser = await Hospital.findById(idUser)
 
-//         res.status(200).json({
-//             ok: "true",
-//             user: getUser
-//         });
-
-//     } catch (err) {
-//         console.log("AN ERROR HAPPENED WHEN CREATING THE USER".red, err);
-//         return res.status(500).json({
-//             ok: "false",
-//             message: "An unexpected error occurred while getting the user"
-//         })
-//     }
-
-// }
 
 module.exports = {
     createUser,
-    editUser,
+    editAnyUser,
     deleteUser,
-    getUsers
+    getUsers,
+    selfEditUser
 };

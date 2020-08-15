@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const {googleVerify} = require('../middlewares/googleSignIn')
 const { generateToken } = require('../helpers/generateToken')
+const getMenuFrontEnd = require('../helpers/menu-frontend')
 
 const signin = async (req,res)=>{
     try{
@@ -15,7 +16,8 @@ const signin = async (req,res)=>{
                     ok: "true",
                     message: {
                         token: token,
-                        user
+                        user,
+                        menu: getMenuFrontEnd(user.role)
                     },
                 });
             }   
@@ -39,7 +41,6 @@ const signin = async (req,res)=>{
 
 
 const signinGoogle = async (req,res)=>{
-
     try{
         const googleToken = req.body.token
         const googleUser = await googleVerify(googleToken).catch(e => {
@@ -68,7 +69,8 @@ const signinGoogle = async (req,res)=>{
                 ok: "true",
                 _id: newUser._id,
                 token,
-                user: newUser
+                user: newUser,
+                menu: getMenuFrontEnd(user.role)
             });
         }
         if(user.google == false){
@@ -83,7 +85,8 @@ const signinGoogle = async (req,res)=>{
             ok: "true",
             _id: user._id,
             token,
-            user: user
+            user: user,
+            menu: getMenuFrontEnd(user.role)
         });
     }catch(err){
         if(err.errors.email){
@@ -109,7 +112,7 @@ const renewToken = async(req, res = response) => {
         const token = await generateToken(id).catch(err=>{
             return res.status(500).json({
                 ok: false,
-                message: 'error generating token'
+                message: 'UNEXPECTED ERROR TOKEN'
             });
         });
     
@@ -121,6 +124,7 @@ const renewToken = async(req, res = response) => {
             ok: true,
             token,
             user,
+            menu: getMenuFrontEnd(user.role)
         });
     }catch(e){
         return res.status(400).json({
@@ -130,49 +134,6 @@ const renewToken = async(req, res = response) => {
     }
 
 }
-
-// router.post('/registergoogle', async (req,res)=>{
-
-//     try{
-//         const googleToken = req.body.token
-//         const googleUser = await Hospital(googleToken).catch(e => {
-//             return res.status(401).json({
-//                 ok: "false",
-//                 message: "Invalid token",
-//             });
-//         })
-
-//         const {name,email,picture} = googleUser
-
-//         const newUser = await new User({
-//             name,
-//             email,
-//             password: ':)',
-//             img: picture,
-//             google: true 
-//         })
-
-//         await newUser.save()
-
-//         res.status(201).json({
-//             ok: "true",
-//             user: newUser
-//         });
-
-//     }catch(err){
-//         if(err.errors.email){
-//             return res.status(500).json({
-//                 ok: "false",
-//                 message: err.errors.email.properties.message,
-//             });
-//         }
-//         return res.status(500).json({
-//             ok: "false",
-//             message: err,
-//         });
-//     }
-
-// })
 
 
 module.exports = {

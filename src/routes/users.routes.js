@@ -1,8 +1,9 @@
 const Router = require("express").Router();
 const verifyToken = require('../middlewares/verifyToken')
 const { check } = require('express-validator')
-const  { getUsers, deleteUser, createUser, editUser } = require('../controllers/users.controller')
+const  { getUsers, deleteUser, createUser, editAnyUser, selfEditUser } = require('../controllers/users.controller')
 const { validateFields } = require('../middlewares/validateFields')
+const {validateADMIN_ROLE} = require('../middlewares/validateADMIN_ROLE')
 
 Router.post('/users', 
     [
@@ -11,17 +12,27 @@ Router.post('/users',
     ], 
     createUser)
 
+//SELF EDIT USER
 Router.put('/users', 
     [
-        check(['id','name','role'], 'required field').not().isEmpty(),
+        verifyToken,
+        check(['_id','name','role'], 'required field').not().isEmpty(),
         validateFields, 
-        verifyToken
     ], 
-    editUser)
+    selfEditUser)
 
-Router.get('/users', [verifyToken], getUsers)
+//EDIT ANY USER ONLY ADMIN ROLE
+Router.put('/users/:id',[
+    verifyToken,
+    validateADMIN_ROLE,
+    check(['_id','name','role'], 'required field').not().isEmpty(),
+    validateFields,
+    ], editAnyUser)
 
-Router.delete('/users/:id', [verifyToken] ,deleteUser)
+
+Router.get('/users', [verifyToken, validateADMIN_ROLE], getUsers)
+
+Router.delete('/users/:id', [verifyToken, validateADMIN_ROLE] ,deleteUser)
 
 
 

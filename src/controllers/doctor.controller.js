@@ -1,4 +1,6 @@
 const Doctor = require('../models/doctor')
+const Hospital = require('../models/hospital')
+
 
 const createDoctor = async (req, res) => {
     try {
@@ -8,21 +10,37 @@ const createDoctor = async (req, res) => {
         const createdDoctor = new Doctor({
             name,
             img,
-            hospital: hospital.name,
+            hospital,
             lastUserModifedIt
         })
 
-        createdDoctor.save((err,product)=>{
+        createdDoctor.save((err,doctor)=>{
             if(err){
                 return res.status(400).json({
                     ok: "false",
                     message: "Invalid hospital"
                 });
             }
-            res.status(201).json({
-                ok: "true",
-                doctor: product
+            
+
+            doctor.populate('hospital', async function(err) {
+                if(err){
+                    res.status(500).json({
+                        ok: "false",
+                        message: 'Unexpected error'
+                    });
+                    return
+                }
+                const hospital = await Hospital.findById(doctor.hospital._id)
+                hospital.doctors.push(doctor._id)
+                await hospital.save()
+
+                res.status(201).json({
+                    ok: "true",
+                    doctor
+                });
             });
+
         })
 
 
@@ -55,7 +73,7 @@ const getDoctors = async (req, res) => {
         let limit = Number(req.query.limit) || 5
         let page = Number(req.query.page) || 1
         
-        const paginate = await Doctor.paginate({  },{limit: limit,page: page})
+        const paginate = await Doctor.paginate({  },{limit: limit,page: page,populate: 'hospital'})
         
         if(paginate.page > paginate.totalPages){
             return res.status(400).json({
@@ -63,7 +81,6 @@ const getDoctors = async (req, res) => {
                 message: `There are only ${paginate.totalPages} pages`
             })
         }
-        
         return res.status(200).json({
             ok: "true",
             doctors: paginate.docs,
@@ -97,7 +114,6 @@ const editDoctor = async (req, res) => {
                 message: "This doctor doesn't exist"
             });
         }
-
         modifiedDoctor.name = name
         modifiedDoctor.img = img
         modifiedDoctor.hospital = hospital
@@ -150,6 +166,19 @@ const deleteDoctor =  async (req, res) => {
             });
         }
 
+        //delete doctor of hospital doctors array
+        const deleteDoctorHospital = await Hospital.findById(deleteDoctor.hospital)
+        if(!deleteDoctorHospital){
+            return res.status(400).json({
+                ok: "false",
+                message: "Corrupt doctor"
+            });
+        }
+        const doctorInHospitalIndex = deleteDoctorHospital.doctors.findIndex(doctor => doctor == deleteDoctor._id.toString())
+        deleteDoctorHospital.doctors.splice(doctorInHospitalIndex)
+        await deleteDoctorHospital.save()
+
+
         return res.status(200).json({
             ok: "true",
             doctor: deleteDoctor
@@ -169,37 +198,7 @@ const deleteDoctor =  async (req, res) => {
         })
     }
 };
-// router.get('/getDoctor/:id', verifyToken, async (req, res) => {
-//     try {
-//         const idDoctor = await req.params.id
-//         const getDoctor = await Doctor.findById(idDoctor)
-//         .populate('lastUserModifedIt', '_id name email role')
-//         .populate('hospital')
 
-//         if(!getDoctor){
-//             return res.status(400).json({
-//                 ok: "false",
-//                 message: "This doctor doesn't exist"
-//             });
-//         }
-
-//         res.status(200).json({
-//             ok: "true",
-//             doctor: getDoctor
-//         });
-
-//     } catch (err) { 
-//         if(err.kind == "ObjectId"){
-//             return res.status(500).json({
-//                 ok: "false",
-//                 message: "Invalid doctor"
-//             })
-//         }else{
-//             return res.status(500).json({
-//                 ok: "false",
-//                 message: "An unexpected error occurred while getting the doctor"
-//             })
-//         }
 
 
 //     }
